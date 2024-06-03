@@ -1,25 +1,69 @@
-﻿namespace ProgresoII
+﻿using System;
+using System.IO;
+using System.Threading.Tasks;
+using Microsoft.Maui.Controls;
+
+namespace ProgresoII
 {
     public partial class MainPage : ContentPage
     {
-        int count = 0;
+        private int montoSeleccionado;
 
         public MainPage()
         {
             InitializeComponent();
+
         }
 
-        private void OnCounterClicked(object sender, EventArgs e)
+        private void OnCheckedChanged(object sender, CheckedChangedEventArgs e)
         {
-            count++;
+            if (LC_RadioButton3.IsChecked)
+            {
+                montoSeleccionado = 3;
+            }
+            else if (LC_RadioButton5.IsChecked)
+            {
+                montoSeleccionado = 5;
+            }
+            else if (LC_RadioButton10.IsChecked)
+            {
+                montoSeleccionado = 10;
+            }
+            LC_LabelRecargaSeleccionada.Text = $"Ha seleccionado una recarga de: {montoSeleccionado} dólares";
+        }
 
-            if (count == 1)
-                CounterBtn.Text = $"Clicked {count} time";
-            else
-                CounterBtn.Text = $"Clicked {count} times";
+        private async void OnRecargarClicked(object sender, EventArgs e)
+        {
+            bool confirmacion = await DisplayAlert("Confirmación", $"¿Desea recargar {montoSeleccionado}?", "Sí", "No");
 
-            SemanticScreenReader.Announce(CounterBtn.Text);
+            if (confirmacion)
+            {
+                
+                await RecargarTelefonoAsync();
+
+                GuardarRecarga();
+
+                await DisplayAlert("Finalizado", "Recarga exitosa", "OK");
+            }
+        }
+
+        private async Task RecargarTelefonoAsync()
+        {
+            await Task.Delay(2000); 
+        }
+
+        private void GuardarRecarga()
+        {
+            string numeroTelefono = LC_EntryTelefono.Text;
+            string operador = LC_PickerOperador.SelectedItem.ToString();
+
+            
+            string fecha = DateTime.Now.ToString("dd/MM/yyyy");
+
+            string texto = $"Se hizo una recarga de {montoSeleccionado} dólares en la siguiente fecha: {fecha}";
+            string nombreArchivo = Path.Combine(FileSystem.AppDataDirectory, $"{numeroTelefono}.txt");
+
+            File.WriteAllText(nombreArchivo, texto);
         }
     }
-
 }
